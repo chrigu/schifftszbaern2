@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 
 import settings
 
+
 def round_timestamp(time):
     """
     Rounds a given time to the next lower 5minute step.

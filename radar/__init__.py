@@ -5,6 +5,7 @@ from radar.utils import create_last_radar_timestamp, create_past_timestamps
 
 HALF_TEST_FIELD_SIZE = int(104/2)
 
+
 def get_rain(x_location, y_location):
     timestamp = create_last_radar_timestamp()
     timestamps = [timestamp] + create_past_timestamps(timestamp, 2)

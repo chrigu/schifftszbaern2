@@ -1,6 +1,7 @@
 import settings
 from radar import get_rain
 
+
 def schiffts():
 
     get_rain(settings.X_LOCATION, settings.Y_LOCATION)

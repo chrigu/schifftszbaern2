@@ -62,7 +62,7 @@ class RadarData(object):
         self.timestamp = timestamp
         self.radar_image = radar_image
         image_data = self._make_raster(radar_image.image_data)
-        self.data, self.label_image = self._analyze(image_data)
+        self.cells, self.label_image = self._analyze(image_data)
 
     def __str__(self):
         return self.timestamp
@@ -73,7 +73,7 @@ class RadarData(object):
     # def to_dict(self):
     #
     #     return_dict = {
-    #         'queue': self.data,
+    #         'queue': self.cells,
     #         'label_img': self.label_image.tolist(),
     #         'timestamp': datetime.strftime(self.timestamp, settings.DATE_FORMAT)
     #     }
@@ -146,7 +146,7 @@ class RadarData(object):
             return [0, 0, 0]
 
     def get_data_for_label(self, label):
-        for data in self.data:
+        for data in self.cells:
             if data['label'] == label:
                 return data
         return None
@@ -270,7 +270,8 @@ class RadarData(object):
                                                     round(cell_rgb[2])]))
 
             cell = Cell(intensity, cell_data[n]['size'], cell_data[n]['mean'],
-                        [cell_data[n]['mass'][0], cell_data[n]['mass'][1]], cell_rgb, n)
+                        [cell_data[n]['mass'][0], cell_data[n]['mass'][1]], cell_rgb, n,
+                        self.timestamp)
 
             result.append(cell)
 
