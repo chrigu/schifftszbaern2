@@ -4,7 +4,8 @@ import unittest
 from datetime import datetime, timedelta
 
 from radar.cell import Cell
-from radar.forecast import _find_closest_point, _find_closest_cells, _make_cells_history, _make_cell_history
+from radar.forecast import _find_closest_point, _find_closest_cells, _make_cells_history, _make_cell_history, \
+    _get_delta_for_cell_history, _extrapolate_cells, _calc_next_positions
 
 
 class RadarDataMock(object):
@@ -30,13 +31,13 @@ class ForecastTests(unittest.TestCase):
         self.assertEqual(closest_point_index, index)
 
     def test_find_closest_cells(self):
-        cell1 = Cell(23, 30, 23, (5, 5), [255, 255, 255], "test1", 12344565)
-        cell2 = Cell(23, 30, 23, (10, 10), [255, 255, 255], "test2", 12344565)
+        cell1 = Cell(23, 30, 23, (5, 5), [255, 255, 255], "cell1", 12344565)
+        cell2 = Cell(23, 30, 23, (10, 10), [255, 255, 255], "cell2", 12344565)
 
-        old_cell1 = Cell(23, 30, 23, (10, 12), [255, 255, 255], "test3", 12340000)
-        old_cell2 = Cell(23, 30, 23, (6, 6), [255, 255, 255], "test4", 12340000)
-        old_cell3 = Cell(23, 30, 23, (4, 3), [255, 255, 255], "test5", 12340000)
-        old_cell4 = Cell(23, 30, 23, (15, 15), [255, 255, 255], "test6", 12340000)
+        old_cell1 = Cell(23, 30, 23, (10, 12), [255, 255, 255], "old_cell1", 12340000)
+        old_cell2 = Cell(23, 30, 23, (6, 6), [255, 255, 255], "old_cell2", 12340000)
+        old_cell3 = Cell(23, 30, 23, (4, 3), [255, 255, 255], "old_cell3", 12340000)
+        old_cell4 = Cell(23, 30, 23, (15, 15), [255, 255, 255], "old_cell4", 12340000)
 
         cells = [cell1, cell2]
         cells_n_minus_1 = [old_cell1, old_cell2, old_cell3, old_cell4]
@@ -101,50 +102,103 @@ class ForecastTests(unittest.TestCase):
 
         self.assertEqual(cells_history, expected_data)
 
-    # def test_make_cells_history(self):
-    #     # cells at t
+    def test_make_cells_history(self):
+        # cells at t
+        t = datetime.now()
+        cell1 = Cell(23, 30, 23, (5, 5), [255, 255, 255], "test1", t)
+        cell2 = Cell(23, 30, 23, (10, 10), [255, 255, 255], "test2", t)
+
+        current_cells = [cell1, cell2]
+
+        radar_data_t = RadarDataMock(current_cells, t)
+
+        #cells at t2
+        t2 = t - timedelta(0, 4 * 60)
+        cell3 = Cell(23, 30, 23, (12, 12), [255, 255, 255], "test3", t)
+        cell4 = Cell(23, 30, 23, (4, 4), [255, 255, 255], "test4", t)
+
+        radar_data_t2 = RadarDataMock([cell3, cell4], t2)
+
+        #cells at t3
+        t3 = t - timedelta(0, 8 * 60)
+        cell5 = Cell(23, 30, 23, (-1, 0), [255, 255, 255], "test5", t)
+        cell6 = Cell(23, 30, 23, (12, 14), [255, 255, 255], "test6", t)
+
+        radar_data_t3 = RadarDataMock([cell5, cell6], t3)
+
+        radar_history = [radar_data_t, radar_data_t2, radar_data_t3]
+
+        cells_history = _make_cells_history(radar_history)
+
+        self.assertEqual(len(cells_history), len(current_cells))
+
+        if cells_history[0][0] == cell1:
+            cells0 = cells_history[0]
+            cells1 = cells_history[1]
+        elif cells_history[0][0] == cell2:
+            cells0 = cells_history[1]
+            cells1 = cells_history[0]
+        else:
+            self.fail("ForecastTests test_make_cells_history: initial cell does not match ({})".format(cells_history[0][0]))
+
+        self.assertEqual(cells0, [cell1, cell4])
+        self.assertEqual(cells1, [cell2, cell3, cell6])
+
+    def test_get_delta_for_cell_history(self):
+
+        first_x, first_y, last_x, last_y = 0, 0, 10, 10
+
+        t = datetime.now()
+        cell1 = Cell(23, 30, 23, (first_x, first_y), [255, 255, 255], "test1", t)
+        cell2 = Cell(23, 30, 23, (5, 10), [255, 255, 255], "test2", t)
+        cell3 = Cell(23, 30, 23, (last_x, last_y), [255, 255, 255], "test3", t)
+
+        cell_history = [cell1, cell2, cell3]
+
+        expected_delta_x = (last_x - first_x) / len(cell_history)
+        expected_delta_y = (last_y - first_y) / len(cell_history)
+
+        delta_x, delta_y = _get_delta_for_cell_history(cell_history)
+
+        self.assertEqual(delta_x, expected_delta_x)
+        self.assertEqual(delta_y, expected_delta_y)
+
+    def test_calc_next_positions(self):
+
+        x, y = 0, 10
+        delta_x = 2
+        delta_y = 5
+        n = 3
+
+        t = datetime.now()
+        cell1 = Cell(23, 30, 23, (x, y), [255, 255, 255], "test1", t)
+
+        forecast = _calc_next_positions(cell1, delta_x, delta_y, n)
+
+        self.assertEqual(len(forecast), n)
+
+        index = 1
+
+        for future_cell in forecast:
+            self.assertEqual(future_cell.center_of_mass, (x + delta_x * index, y + delta_y * index))
+            index += 1
+
+    # def test_extrapolate_cell(self):
+    #     first_x, first_y, last_x, last_y = 0, 0, 10, 10
+    #
     #     t = datetime.now()
-    #     cell1 = Cell(23, 30, 23, (5, 5), [255, 255, 255], "test1", t)
-    #     cell2 = Cell(23, 30, 23, (10, 10), [255, 255, 255], "test2", t)
+    #     cell1 = Cell(23, 30, 23, (first_x, first_y), [255, 255, 255], "test1", t)
+    #     cell2 = Cell(23, 30, 23, (5, 10), [255, 255, 255], "test2", t)
+    #     cell3 = Cell(23, 30, 23, (last_x, last_y), [255, 255, 255], "test3", t)
     #
-    #     current_cells = [cell1, cell2]
+    #     cell4 = Cell(23, 30, 23, (20, 0), [255, 255, 255], "test4", t)
+    #     cell5 = Cell(23, 30, 23, (21, 30), [255, 255, 255], "test5", t)
+    #     cell6 = Cell(23, 30, 23, (30, 40), [255, 255, 255], "test6", t)
     #
-    #     radar_data_t = RadarDataMock(current_cells, t)
+    #     cell_history1 = [cell1, cell2, cell3]
+    #     cell_history2 = [cell4, cell5, cell6]
     #
-    #     #cells at t2
-    #     t2 = t - timedelta(0, 4 * 60)
-    #     cell3 = Cell(23, 30, 23, (12, 12), [255, 255, 255], "test3", t)
-    #     cell4 = Cell(23, 30, 23, (4, 4), [255, 255, 255], "test4", t)
-    #
-    #     radar_data_t2 = RadarDataMock([cell3, cell4], t2)
-    #
-    #     #cells at t3
-    #     t3 = t - timedelta(0, 8 * 60)
-    #     cell5 = Cell(23, 30, 23, (-1, 0), [255, 255, 255], "test5", t)
-    #     cell6 = Cell(23, 30, 23, (12, 12), [255, 255, 255], "test6", t)
-    #
-    #     radar_data_t3 = RadarDataMock([cell5, cell6], t3)
-    #
-    #     radar_history = [radar_data_t, radar_data_t2, radar_data_t3]
-    #
-    #     cells_history = _make_cells_history(radar_history)
-    #
-    #     print(cells_history)
-    #
-    #     self.assertEqual(len(cells_history), len(current_cells))
-    #     print(cells_history[0][0])
-    #
-    #     if cells_history[0][0] == cell1:
-    #         cells0 = cells_history[0]
-    #         cells1 = cells_history[1]
-    #     elif cells_history[0][0] == cell2:
-    #         cells0 = cells_history[1]
-    #         cells1 = cells_history[0]
-    #     else:
-    #         self.fail("ForecastTests test_make_cells_history: initial cell does not match ({})".format(cells_history[0][0]))
-    #
-    #     self.assertEqual(cells0, [cell1, cell4])
-    #     self.assertEqual(cells1, [cell2, cell3, cell6])
+    #     _extrapolate_cells([cell_history1, cell_history2])
 
 
 if __name__ == '__main__':

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from datetime import timedelta
 from functools import partial
 
 
@@ -12,6 +13,7 @@ from functools import partial
 #         n_1_values.append(cell)
 #
 #     return oldest_cells, n_1_values
+from radar.cell import Cell
 
 
 def _delta_time_in_tolerance(newer_timestamp, older_timestamp):
@@ -86,28 +88,58 @@ def _make_cells_history(radar_data):
     if len(radar_data) < 2:
         return
 
-    latest_cells = radar_data[0].cells
+    # init closest cells with latest cells from radar
+    closest_cells = radar_data[0].cells
 
-    cells_history = [latest_cells]
+    cells_history = [closest_cells]
 
     for index in range(1, len(radar_data)):
+        older_cells = radar_data[index].cells
         if _delta_time_in_tolerance(radar_data[index - 1].timestamp, radar_data[index].timestamp):
-            closest_cells = _find_closest_cells(radar_data[index - 1].cells, radar_data[index].cells)
+            closest_cells = _find_closest_cells(closest_cells, older_cells)
             cells_history.append(closest_cells)
 
     return _make_cell_history(cells_history)
 
 
+def _get_delta_for_cell_history(cell_history):
+    number_items = len(cell_history)
+    delta_x = (cell_history[-1].center_of_mass[0] - cell_history[0].center_of_mass[0]) / number_items
+    delta_y = (cell_history[-1].center_of_mass[1] - cell_history[0].center_of_mass[1]) / number_items
+
+    return delta_x, delta_y
+
+
+def _calc_next_positions(cell, delta_x, delta_y, steps):
+
+    forecasts = []
+
+    for index in range(1, steps + 1):
+
+        delta_t = 10 * 60 * index # assume it's always a 10min step (for starters)
+        future_position = (cell.center_of_mass[0] + delta_x * index, cell.center_of_mass[1] + delta_y * index)
+        forecast_cell = Cell(cell.intensity, cell.size, cell.mean, future_position, cell.rgb,
+                             'forecast_{}'.format(cell.label), cell.timestamp + timedelta(0, delta_t))
+
+        forecasts.append(forecast_cell)
+        # print(forecast_cell.center_of_mass)
+
+    return forecasts
+
+
+def _extrapolate_cells(cells_history):
+    # calc 5 next points
+    for cell_history in cells_history:
+        delta_x, delta_y = _get_delta_for_cell_history(cell_history)
+        forecasted_cells = _calc_next_positions(cell_history[-1], delta_x, delta_y, 5)
+        print(forecasted_cells)
+    pass
+
 def make_forecast(radar_data):
 
-    # history object: timestamp,
-
-    # check if 10min apart
-    # go through radar data (timestamps)
-    #   find closest match for each cell
-    #   add closest match to history
-    # https://stackoverflow.com/questions/5981502/select-the-closest-pair-from-a-list
     cells_history = _make_cells_history(radar_data)
+    # extra polate points
+    # check if hit near point & which hit // closest hit
 
 
 
