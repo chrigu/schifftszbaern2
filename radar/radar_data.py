@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 import settings
-import json
+from datetime import datetime
 
 from numpy import array as np_array
-
 from scipy import ndimage
 #import matplotlib.pyplot as plt
 import numpy as np
 from numpy import linalg
 
+from radar.utils import DATE_FORMAT
 from radar.cell import Cell
 
 #todo move to const
@@ -60,9 +60,10 @@ class RadarData(object):
     def __init__(self, radar_image, timestamp):
 
         self.timestamp = timestamp
-        self.radar_image = radar_image
-        image_data = self._make_raster(radar_image.image_data)
-        self.cells, self.label_image = self._analyze(image_data)
+        if radar_image:
+            self.radar_image = radar_image
+            image_data = self._make_raster(radar_image.image_data)
+            self.cells, self.label_image = self._analyze(image_data)
 
     def __str__(self):
         return self.timestamp
@@ -70,15 +71,24 @@ class RadarData(object):
     # def __unicode__(self):
     #     return u"%s" % self.timestamp
     #
-    # def to_dict(self):
-    #
-    #     return_dict = {
-    #         'queue': self.cells,
-    #         'label_img': self.label_image.tolist(),
-    #         'timestamp': datetime.strftime(self.timestamp, settings.DATE_FORMAT)
-    #     }
-    #
-    #     return return_dict
+    def to_dict(self):
+
+        dict_cells = []
+
+        for cell in self.cells:
+            dict_cells.append(cell.to_dict())
+
+        return_dict = {
+            'cells': dict_cells,
+            'label_img': self.label_image.tolist(),
+            'timestamp': datetime.strftime(self.timestamp, DATE_FORMAT)
+        }
+
+        return return_dict
+
+    @staticmethod
+    def from_dict(data_dict):
+        pass
     #
     # def to_json(self):
     #     return json.dumps(self.to_dict())

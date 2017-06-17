@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+import math
 from datetime import timedelta
-from functools import partial
-
+from functools import partial, reduce
 
 # def _latest_c(reverse_radar_data):
 #     oldest_cells = []
@@ -48,16 +48,18 @@ def _find_closest_point_and_filter_by_distance(point, candidates, max_distance):
 
 
 def _find_closest_cells(cells_at_n, cells_at_n_minus_1):
+    # todo: test with none in cells at n
 
     closest_cells = []
     positions_n_minus_1 = list(map(lambda old_cell: old_cell.center_of_mass, cells_at_n_minus_1))
     for cell in cells_at_n:
-        # just some treshold (about 9.6km (if delta is 5 minutes this is about 115km/h))
-        closest_index = _find_closest_point_and_filter_by_distance(cell.center_of_mass, positions_n_minus_1, 4)
-        if closest_index > -1:
-            closest_cells.append(cells_at_n_minus_1[closest_index])
-        else:
-            closest_cells.append(None)
+        if cell:
+            # just some treshold (about 9.6km (if delta is 5 minutes this is about 115km/h))
+            closest_index = _find_closest_point_and_filter_by_distance(cell.center_of_mass, positions_n_minus_1, 4)
+            if closest_index > -1:
+                closest_cells.append(cells_at_n_minus_1[closest_index])
+            else:
+                closest_cells.append(None)
 
     return closest_cells
 
@@ -116,7 +118,7 @@ def _calc_next_positions(cell, delta_x, delta_y, steps):
 
     for index in range(1, steps + 1):
 
-        delta_t = 10 * 60 * index # assume it's always a 10min step (for starters)
+        delta_t = 10 * 60 * index  # assume it's always a 10min step (for starters)
         future_position = (cell.center_of_mass[0] + delta_x * index, cell.center_of_mass[1] + delta_y * index)
         forecast_cell = Cell(cell.intensity, cell.size, cell.mean, future_position, cell.rgb,
                              'forecast_{}'.format(cell.label), cell.timestamp + timedelta(0, delta_t))
@@ -128,48 +130,69 @@ def _calc_next_positions(cell, delta_x, delta_y, steps):
 
 
 def _extrapolate_cells(cells_history):
-    # calc 5 next points
+    # Todo: add test
+
+    forcast = []
+
     for cell_history in cells_history:
         delta_x, delta_y = _get_delta_for_cell_history(cell_history)
         forecasted_cells = _calc_next_positions(cell_history[-1], delta_x, delta_y, 5)
-        print(forecasted_cells)
-    pass
+        forcast.append(forecasted_cells)
 
-def make_forecast(radar_data):
+    return forcast
+
+
+def _find_next_hit(hits):
+
+    if len(hits) == 0:
+        return None
+
+    closest_hit = reduce(lambda cell1, cell2: cell1 if (cell2.timestamp > cell1.timestamp) else cell2, hits)
+    return closest_hit
+
+
+def _find_cell_hits(forecasted_cells, location):
+
+    hits = []
+
+    for cells in forecasted_cells:
+
+        r = math.sqrt(cells[0].size/math.pi)
+
+        for cell in cells:
+            dist = math.hypot(location[0] - cell.center_of_mass[0], location[1] - cell.center_of_mass[1])
+            if dist < r:
+                hits.append(cell)
+                break
+
+    return hits
+
+
+def _find_forecasts_index_for_next_hit(forecasted_cells, next_hit):
+
+    index = 0
+
+    for cells in forecasted_cells:
+        for cell in cells:
+            if cell.id == next_hit.id:
+                return index
+
+        index += 1
+
+
+def make_forecast(radar_data, location):
 
     cells_history = _make_cells_history(radar_data)
-    # extra polate points
-    # check if hit near point & which hit // closest hit
+    forecasted_cells = _extrapolate_cells(cells_history)
+    hits = _find_cell_hits(forecasted_cells, location)
+    next_hit = _find_next_hit(hits)
 
+    if next_hit:
+        hit_history = cells_history[_find_cell_hits(forecasted_cells, next_hit)]
+    else:
+        hit_history = []
 
-
-    # loop through radar data
-    # find closest cells array in array
-
-
-    # # oldest sample first in array
-    # reverse_radar_data = sorted(radar_data, key=lambda x: x.timestamp, reverse=True)
-    # history = None
-    #
-    # new_data, n_1_values = _init_samples(reverse_radar_data)
-    #
-    # # go through the rest of the data (time descending)
-    # for index in range(1, len(reverse_radar_data)):
-    #     # check if the samples have max. a 10min difference between them.
-    #     try:
-    #         dt = reverse_radar_data[index - 1].timestamp - reverse_radar_data[index].timestamp
-    #
-    #         if dt.seconds > 10 * 60:
-    #             break
-    #
-    #     except Exception as e:
-    #         print("error: {}".format(e))
-    #         continue
-    #
-    #     close_points = _find_closest_old_cells(data[index], n_1_values)
-    #     history = _add_to_closest_match_to_history(data[index], n_1_values, close_points, new_data)
-    #
-    #     n_1_values = data[index].data
-    #
-    # # todo: fix parameters
-    # return _caclulate_vector(new_data), history # history and new_data is kind of the same o_O
+    return {
+        next_hit: next_hit,
+        hit_history: hit_history
+    }

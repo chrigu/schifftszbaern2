@@ -2,6 +2,8 @@ from datetime import datetime, timedelta
 
 import settings
 
+DATE_FORMAT = "%Y%m%d%H%M00"
+
 
 def round_timestamp(time):
     """

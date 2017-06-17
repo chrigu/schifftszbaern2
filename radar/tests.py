@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+import math
 from datetime import datetime, timedelta
 
 from radar.cell import Cell
 from radar.forecast import _find_closest_point, _find_closest_cells, _make_cells_history, _make_cell_history, \
-    _get_delta_for_cell_history, _extrapolate_cells, _calc_next_positions
+    _get_delta_for_cell_history, _extrapolate_cells, _calc_next_positions, _find_next_hit, _find_cell_hits, \
+    _find_forecasts_index_for_next_hit
 
 
 class RadarDataMock(object):
@@ -182,6 +184,87 @@ class ForecastTests(unittest.TestCase):
         for future_cell in forecast:
             self.assertEqual(future_cell.center_of_mass, (x + delta_x * index, y + delta_y * index))
             index += 1
+
+    def test_find_next_hit(self):
+
+        cell1 = Cell(23, 30, 23, (5, 10), [255, 255, 255], "test1", 1000)
+        cell2 = Cell(23, 30, 23, (5, 10), [255, 255, 255], "test2", 100)
+        cell3 = Cell(23, 30, 23, (5, 10), [255, 255, 255], "test3", 10000)
+
+        closest_hit = _find_next_hit([cell1, cell2, cell3])
+
+        self.assertEqual(cell2, closest_hit)
+
+    def test_find_next_hit_no_hit(self):
+
+        closest_hit = _find_next_hit([])
+
+        self.assertEqual(None, closest_hit)
+
+    def test_cell_hits(self):
+
+        location = (10, 10)
+
+        r1 = math.pi * 1
+        r2 = math.pi * 2 ** 2
+        r3 = r2
+
+        hit1 = Cell(23, r2, 23, (10, 8.1), [255, 255, 255], "hit1", 30000)
+        hit2 = Cell(23, r3, 23, (8.1, 10), [255, 255, 255], "hit2", 30000)
+
+        cells1 = [
+            Cell(23, r1, 23, (2, 2), [255, 255, 255], "test1", 10000),
+            Cell(23, r1, 23, (4, 4), [255, 255, 255], "test2", 20000),
+            Cell(23, r1, 23, (6, 6), [255, 255, 255], "test3", 30000),
+        ]
+
+        cells2 = [
+            Cell(23, r2, 23, (10, 4), [255, 255, 255], "test4", 10000),
+            Cell(23, r2, 23, (10, 6), [255, 255, 255], "test5", 20000),
+            hit1,
+        ]
+
+        cells3 = [
+            Cell(23, r3, 23, (4, 10), [255, 255, 255], "test6", 10000),
+            Cell(23, r3, 23, (6, 10), [255, 255, 255], "test7", 20000),
+            hit2,
+        ]
+
+        forecasted_cells = [cells1, cells2, cells3]
+
+        hits = _find_cell_hits(forecasted_cells, location)
+
+        expected_hits = [hit1, hit2]
+
+        self.assertEqual(hits, expected_hits)
+
+    def test_find_forecasts_index_for_next_hit(self):
+
+        hit1 = Cell(23, 12, 23, (10, 8.1), [255, 255, 255], "hit1", 30000)
+
+        cells1 = [
+            Cell(23, 12, 23, (2, 2), [255, 255, 255], "test1", 10000),
+            Cell(23, 12, 23, (4, 4), [255, 255, 255], "test2", 20000),
+            Cell(23, 12, 23, (6, 6), [255, 255, 255], "test3", 30000),
+        ]
+
+        cells2 = [
+            Cell(23, 12, 23, (10, 4), [255, 255, 255], "test4", 10000),
+            Cell(23, 12, 23, (10, 6), [255, 255, 255], "test5", 20000),
+            hit1,
+        ]
+
+        cells3 = [
+            Cell(23, 12, 23, (4, 10), [255, 255, 255], "test6", 10000),
+            Cell(23, 12, 23, (6, 10), [255, 255, 255], "test7", 20000),
+            Cell(23, 12, 23, (8.1, 10), [255, 255, 255], "hit2", 30000),
+        ]
+
+        forecasted_cells = [cells1, cells2, cells3]
+
+        index = _find_forecasts_index_for_next_hit(forecasted_cells, hit1)
+
+        self.assertEqual(index, 1)
 
     # def test_extrapolate_cell(self):
     #     first_x, first_y, last_x, last_y = 0, 0, 10, 10
