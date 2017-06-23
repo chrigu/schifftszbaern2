@@ -70,15 +70,16 @@ def _make_cell_history(cells_data):
     if len(cells_data) == 0:
         return []
 
+
     histories = []
     number_cells = len(cells_data[0])
-
+    # todo: use numpy.transponse
     # todo: generator time?
     for cell_index in range(0, number_cells):
         for point_in_time_index in range(0, len(cells_data)):
             if point_in_time_index == 0:
                 histories.append([cells_data[0][cell_index]])
-            elif cells_data[point_in_time_index][cell_index]:
+            elif cell_index < len(cells_data[point_in_time_index]) and cells_data[point_in_time_index][cell_index]:
                 histories[cell_index].append(cells_data[point_in_time_index][cell_index])
             else:
                 break
@@ -193,6 +194,6 @@ def make_forecast(radar_data, location):
         hit_history = []
 
     return {
-        next_hit: next_hit,
-        hit_history: hit_history
+        'next_hit': next_hit,
+        'hit_history': hit_history
     }

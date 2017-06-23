@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
+from mock import patch
 from numpy import zeros
 from datetime import datetime, timedelta
 
@@ -81,7 +82,6 @@ class DataStorageTests(unittest.TestCase):
 
         next_hit = Cell(23, 30, 23, (4, 3), [255, 255, 255], "next", timestamp2)
 
-
         current_rain = {'name': '3mm/h', 'rgb': [0, 50, 255], 'intensity': 1}
 
         storage = DataStorage("some.json")
@@ -98,3 +98,18 @@ class DataStorageTests(unittest.TestCase):
         }
 
         self.assertEqual(data, expected_data)
+
+    @patch.object(DataStorage, '_read_data', return_value={
+        'timestamp': "1497949200000",
+        'radar_history': [
+            {
+                'label_img': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+                'cells': [],
+                'timestamp': "1497949200000"
+            }
+        ]
+    })
+    def test_save_data(self):
+        # mock read data
+        #
+        pass

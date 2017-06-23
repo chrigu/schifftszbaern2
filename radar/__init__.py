@@ -5,7 +5,7 @@ from radar.utils import create_last_radar_timestamp, create_past_timestamps
 from radar.forecast import make_forecast
 
 HALF_TEST_FIELD_SIZE = int(104/2)
-DATE_FORMAT = "%Y%m%d%H%M00" # todo: use this one
+DATE_FORMAT = "%Y%m%d%H%M00"  # todo: use this one
 
 
 def get_rain(location):

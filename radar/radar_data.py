@@ -88,7 +88,20 @@ class RadarData(object):
 
     @staticmethod
     def from_dict(data_dict):
-        pass
+
+        radar_data = RadarData(None, datetime.strptime(data_dict['timestamp'], DATE_FORMAT))
+
+        cells = []
+
+        for cell_dict in data_dict['cells']:
+            cell = Cell.from_dict(cell_dict)
+            cells.append(cell)
+
+        radar_data.cells = cells
+        radar_data.label_image = data_dict['radar_data']
+
+        return radar_data
+
     #
     # def to_json(self):
     #     return json.dumps(self.to_dict())

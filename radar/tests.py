@@ -85,6 +85,25 @@ class ForecastTests(unittest.TestCase):
 
         self.assertEqual(cells_history, expected_data)
 
+    def test_make_cell_history_with_different_lengths(self):
+        cells_data = [
+            ["cell11", "cell21", "cell31"],
+            ["cell12", "cell22"],
+            ["cell13", "cell23"],
+            ["cell14"],
+        ]
+
+        cells_history = _make_cell_history(cells_data)
+
+        expected_data = [
+            ["cell11", "cell12", "cell13", "cell14"],
+            ["cell21", "cell22", "cell23"],
+            ["cell31"]
+        ]
+
+        self.assertEqual(cells_history, expected_data)
+
+
     def test_make_cell_history_with_missing(self):
 
         cells_data = [

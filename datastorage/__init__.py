@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
+import json
 
+from radar.radar_data import RadarData
+from radar.cell import Cell
 
 class DataStorage(object):
 
@@ -10,42 +13,75 @@ class DataStorage(object):
 
         radar_history_dicts = list(map(lambda radar_data: radar_data.to_dict(), radar_history))
 
+        next_hit_dict = {}
+
+        if next_hit:
+            next_hit_dict = next_hit.to_dict()
+
         data = {
             'timestamp': timestamp,
             'radar_history': radar_history_dicts,
-            'next_hit': next_hit.to_dict(),
+            'next_hit': next_hit_dict,
             'rain_at_position': rain_at_pos
         }
         return data
 
-    def save_data(self, timestamp, radar_history, next_hit, rain_at_pos):
-        pass
-        # #save data, convert datetime objects to strings
-        # try:
-        #     if last_dry:
-        #         last_dry_string = datetime.strftime(last_dry, settings.DATE_FORMAT)
-        #     else:
-        #         last_dry_string = None
-        #
-        #     if last_rain:
-        #         last_rain_string = datetime.strftime(last_rain, settings.DATE_FORMAT)
-        #     else:
-        #         last_rain_string = None
-        #
-        #     #save data to file
-        #     save_data = {'last_update': datetime.strftime(last_update, settings.DATE_FORMAT), 'queue': queue_to_save,
-        #                  'last_sample_rain': rain_now, 'last_dry': last_dry_string,
-        #                 'last_rain': last_rain_string, 'next_hit': next_hit, 'intensity': intensity,
-        #                  'last_sample_snow': snow, 'location_weather_data': location_weather_data,
-        #                  'prediction_id': prediction_id}
+    def _read_data(self):
 
-        #     with open(self.filename, 'w') as outfile:
-        #         json.dump(save_data, outfile, default=self.encode)
-        #
-        #     return True
-        #
-        # except Exception, e:
-        #     if settings.DEBUG:
-        #         print e
-        #
-        # return False
+        loaded_data = None
+
+        try:
+            f = open(self.filename, 'r')
+            loaded_data = json.loads(f.read())
+
+        except Exception as e:
+            print(e)
+
+        finally:
+            try:
+                f.close()
+            except:
+                pass
+
+        return loaded_data
+
+    def load_data(self):
+        # try to open the file with the old data
+
+        data = {
+            'timestamp': None,
+            'radar_history': [],
+            'next_hit': None,
+            'rain_at_position': None
+        }
+
+        old_data = self._read_data()
+        if not old_data:
+            return data
+
+        if 'timestamp' in old_data:
+            data['timestamp'] = old_data['timestamp']
+
+        if 'radar_history' in old_data:
+            data['radar_history'] = RadarData.from_dict(old_data['radar_history'])
+
+        if 'rain_at_position' in old_data:
+            data['rain_at_position'] = old_data['rain_at_position']
+
+        if 'next_hit' in old_data:
+            data['next_hit'] = Cell.from_dict(old_data['next_hit'])
+
+        return data
+
+    def save_data(self, timestamp, radar_history, next_hit, rain_at_pos):
+        rain_data = self._prepare_data(timestamp, radar_history, next_hit, rain_at_pos)
+
+        try:
+            with open(self.filename, 'w') as outfile:
+                json.dump(rain_data, outfile)
+
+            return True
+
+        except Exception:
+            print("Could not write json")
+            return False
