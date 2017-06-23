@@ -63,7 +63,13 @@ class DataStorage(object):
             data['timestamp'] = old_data['timestamp']
 
         if 'radar_history' in old_data:
-            data['radar_history'] = RadarData.from_dict(old_data['radar_history'])
+
+            radar_history = []
+
+            for radar_data in old_data['radar_history']:
+                radar_history.append((RadarData.from_dict(radar_data)))
+
+            data['radar_history'] = radar_history
 
         if 'rain_at_position' in old_data:
             data['rain_at_position'] = old_data['rain_at_position']

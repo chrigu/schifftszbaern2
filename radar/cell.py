@@ -31,10 +31,7 @@ class Cell(object):
             'intensity': self.intensity,
             'size': self.size,
             'mean': self.mean,
-            'center_of_mass': {
-                'x': self.center_of_mass[0],
-                'y': self.center_of_mass[1]
-            },
+            'center_of_mass': (self.center_of_mass[0], self.center_of_mass[1]),
             'rgb': self.rgb,
             'label': self.label,
             'id': self.id,
@@ -44,5 +41,5 @@ class Cell(object):
     @staticmethod
     def from_dict(cell_dict):
         return Cell(cell_dict['intensity'], cell_dict['size'], cell_dict['mean'],
-                    (cell_dict['center_of_mass'][0], cell_dict['center_of_mass'][1], cell_dict['rgb']),
-                    cell_dict['label'], datetime.strptime(str(cell_dict['timsestamp']), DATE_FORMAT), cell_dict['id'])
+                    (cell_dict['center_of_mass'][0], cell_dict['center_of_mass'][1]), cell_dict['rgb'],
+                    cell_dict['label'], datetime.strptime(str(cell_dict['timestamp']), DATE_FORMAT), cell_dict['id'])

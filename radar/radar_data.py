@@ -80,7 +80,7 @@ class RadarData(object):
 
         return_dict = {
             'cells': dict_cells,
-            'label_img': self.label_image.tolist(),
+            'label_image': self.label_image.tolist(),
             'timestamp': datetime.strftime(self.timestamp, DATE_FORMAT)
         }
 
@@ -98,7 +98,7 @@ class RadarData(object):
             cells.append(cell)
 
         radar_data.cells = cells
-        radar_data.label_image = data_dict['radar_data']
+        radar_data.label_image = data_dict['label_image']
 
         return radar_data
 

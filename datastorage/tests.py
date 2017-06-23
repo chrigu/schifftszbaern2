@@ -99,17 +99,78 @@ class DataStorageTests(unittest.TestCase):
 
         self.assertEqual(data, expected_data)
 
+    # todo: use factory
     @patch.object(DataStorage, '_read_data', return_value={
         'timestamp': "1497949200000",
         'radar_history': [
             {
-                'label_img': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
-                'cells': [],
-                'timestamp': "1497949200000"
+                'label_image': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+                'cells': [
+                    {
+                        'intensity': 1,
+                        'size': 2,
+                        'mean': 3,
+                        'center_of_mass': (4, 5),
+                        'rgb': (6, 7, 8),
+                        'label': "test10",
+                        'id': 'test_10',
+                        'timestamp': "14979492000"
+                    },
+                    {
+                        'intensity': 10,
+                        'size': 11,
+                        'mean': 12,
+                        'center_of_mass': (14, 15),
+                        'rgb': (15, 16, 17),
+                        'label': "test11",
+                        'id': 'test_11',
+                        'timestamp': "14979492000"
+                    }
+                ],
+                'timestamp': "14979492000"
+            },
+            {
+                'label_image': [[0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+                'cells': [
+                    {
+                        'intensity': 20,
+                        'size': 21,
+                        'mean': 22,
+                        'center_of_mass': (23, 24),
+                        'rgb': (25, 26, 27),
+                        'label': "test20",
+                        'id': 'test_20',
+                        'timestamp': "14979491000"
+                    },
+                    {
+                        'intensity': 30,
+                        'size': 31,
+                        'mean': 32,
+                        'center_of_mass': (33, 34),
+                        'rgb': (35, 36, 37),
+                        'label': "test21",
+                        'id': 'test_21',
+                        'timestamp': "14979491000"
+                    }
+                ],
+                'timestamp': "14979491000"
             }
         ]
     })
-    def test_save_data(self):
-        # mock read data
-        #
-        pass
+    def test_load_data(self, read_data):
+        storage = DataStorage("some.json")
+        data = storage.load_data()
+        print(data)
+
+        expected_rain = None
+        expected_hit = None
+        expected_timestamp = '1497949200000'
+
+        radar1 = data['radar_history'][0]
+        radar2 = data['radar_history'][1]
+
+        self.assertEqual(data['rain_at_position'], expected_rain)
+        self.assertEqual(data['next_hit'], expected_hit)
+        self.assertEqual(data['timestamp'], expected_timestamp)
+
+        self.assertEqual(radar1.cells[0].label, "test10")
