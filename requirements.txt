@@ -1,0 +1,12 @@
+appdirs==1.4.3
+mock==2.0.0
+numpy==1.12.1
+olefile==0.44
+packaging==16.8
+pbr==3.1.0
+Pillow==4.1.1
+pyparsing==2.2.0
+requests==2.14.2
+scipy==0.19.0
+six==1.10.0
+uuid==1.30
