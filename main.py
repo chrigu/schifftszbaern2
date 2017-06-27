@@ -15,6 +15,7 @@ def schiffts():
     datastorage = DataStorage("schiffts.json")
 
     # load old data
+    old_data = datastorage.load_data()
 
     current_rain_at_location, forecast, radar_data = get_rain((settings.X_LOCATION, settings.Y_LOCATION))
 

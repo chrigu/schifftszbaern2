@@ -8,18 +8,24 @@ HALF_TEST_FIELD_SIZE = int(104/2)
 DATE_FORMAT = "%Y%m%d%H%M00"  # todo: use this one
 
 
-def get_rain(location):
+def _get_saved_radar_data(timestamp, saved_history):
+    return next((radar for radar in saved_history if radar.timestamp == timestamp), None)
+
+
+def get_rain(location, saved_history=None):
     timestamp = create_last_radar_timestamp()
     timestamps = [timestamp] + create_past_timestamps(timestamp, 2)
 
     radar_history = []
 
     for timestamp in timestamps:
-        radar_img = RadarImage((location[0] - HALF_TEST_FIELD_SIZE, location[1] - HALF_TEST_FIELD_SIZE,
-                                location[0] + HALF_TEST_FIELD_SIZE, location[1] + HALF_TEST_FIELD_SIZE),
-                                timestamp=timestamp)
+        radar_data_for_timestamp = _get_saved_radar_data(timestamp, saved_history)
+        if not radar_data_for_timestamp:
+            radar_img = RadarImage((location[0] - HALF_TEST_FIELD_SIZE, location[1] - HALF_TEST_FIELD_SIZE,
+                                    location[0] + HALF_TEST_FIELD_SIZE, location[1] + HALF_TEST_FIELD_SIZE),
+                                    timestamp=timestamp)
 
-        radar_data_for_timestamp = RadarData(radar_img, timestamp)
+            radar_data_for_timestamp = RadarData(radar_img, timestamp)
         radar_history.append(radar_data_for_timestamp)
 
     current_radar_data = radar_history[0]

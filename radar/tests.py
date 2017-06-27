@@ -4,6 +4,7 @@ import unittest
 import math
 from datetime import datetime, timedelta
 
+from radar import RadarData, _get_saved_radar_data
 from radar.cell import Cell
 from radar.forecast import _find_closest_point, _find_closest_cells, _make_cells_history, _make_cell_history, \
     _get_delta_for_cell_history, _extrapolate_cells, _calc_next_positions, _find_next_hit, _find_cell_hits, \
@@ -15,6 +16,25 @@ class RadarDataMock(object):
         self.cells = cells
         self.timestamp = timestamp
 
+class RadarTests(unittest.TestCase):
+
+    def test_get_saved_radar_data(self):
+
+        timestamps = [datetime.now() + timedelta(0, x * -10 * 60) for x in range(3)]
+        radar_history = [RadarData(None, timestamp) for timestamp in timestamps]
+
+        radar_data = _get_saved_radar_data(timestamps[1], radar_history)
+
+        self.assertEqual(radar_data, radar_history[1])
+
+    def test_get_saved_radar_data_without_result(self):
+
+        timestamps = [datetime.now() + timedelta(0, x * -10 * 60) for x in range(3)]
+        radar_history = [RadarData(None, timestamp) for timestamp in timestamps]
+
+        radar_data = _get_saved_radar_data(datetime.now() + timedelta(0, 5 * -10 * 60), radar_history)
+
+        self.assertEqual(radar_data, None)
 
 class ForecastTests(unittest.TestCase):
 
