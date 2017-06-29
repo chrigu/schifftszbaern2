@@ -4,7 +4,7 @@ import unittest
 import math
 from datetime import datetime, timedelta
 
-from radar import RadarData, _get_saved_radar_data
+from radar import RadarData, _get_old_radar_data
 from radar.cell import Cell
 from radar.forecast import _find_closest_point, _find_closest_cells, _make_cells_history, _make_cell_history, \
     _get_delta_for_cell_history, _extrapolate_cells, _calc_next_positions, _find_next_hit, _find_cell_hits, \
@@ -16,6 +16,7 @@ class RadarDataMock(object):
         self.cells = cells
         self.timestamp = timestamp
 
+
 class RadarTests(unittest.TestCase):
 
     def test_get_saved_radar_data(self):
@@ -23,7 +24,7 @@ class RadarTests(unittest.TestCase):
         timestamps = [datetime.now() + timedelta(0, x * -10 * 60) for x in range(3)]
         radar_history = [RadarData(None, timestamp) for timestamp in timestamps]
 
-        radar_data = _get_saved_radar_data(timestamps[1], radar_history)
+        radar_data = _get_old_radar_data(timestamps[1], radar_history)
 
         self.assertEqual(radar_data, radar_history[1])
 
@@ -32,9 +33,10 @@ class RadarTests(unittest.TestCase):
         timestamps = [datetime.now() + timedelta(0, x * -10 * 60) for x in range(3)]
         radar_history = [RadarData(None, timestamp) for timestamp in timestamps]
 
-        radar_data = _get_saved_radar_data(datetime.now() + timedelta(0, 5 * -10 * 60), radar_history)
+        radar_data = _get_old_radar_data(datetime.now() + timedelta(0, 5 * -10 * 60), radar_history)
 
         self.assertEqual(radar_data, None)
+
 
 class ForecastTests(unittest.TestCase):
 
@@ -187,7 +189,7 @@ class ForecastTests(unittest.TestCase):
 
     def test_get_delta_for_cell_history(self):
 
-        first_x, first_y, last_x, last_y = 0, 0, 10, 10
+        first_x, first_y, last_x, last_y = 12, 12, 0, 0
 
         t = datetime.now()
         cell1 = Cell(23, 30, 23, (first_x, first_y), [255, 255, 255], "test1", t)
@@ -196,8 +198,8 @@ class ForecastTests(unittest.TestCase):
 
         cell_history = [cell1, cell2, cell3]
 
-        expected_delta_x = (last_x - first_x) / len(cell_history)
-        expected_delta_y = (last_y - first_y) / len(cell_history)
+        expected_delta_x = (first_x - last_x) / (len(cell_history) - 1)
+        expected_delta_y = (first_y - last_y) / (len(cell_history) - 1)
 
         delta_x, delta_y = _get_delta_for_cell_history(cell_history)
 

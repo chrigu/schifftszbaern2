@@ -4,11 +4,12 @@ import twitter
 import random
 import settings
 
+
 def do_twitter(rain):
     api = twitter.Api(consumer_key=settings.CONSUMER_KEY,
-                      consumer_secret=settings.CONSUMER_SECRET,
-                      access_token_key=settings.ACCESS_TOKEN,
-                      access_token_secret=settings.ACCESS_TOKEN_SECRET)
+                               consumer_secret=settings.CONSUMER_SECRET,
+                               access_token_key=settings.ACCESS_TOKEN,
+                               access_token_secret=settings.ACCESS_TOKEN_SECRET)
 
     print(api.VerifyCredentials())
 

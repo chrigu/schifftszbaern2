@@ -74,7 +74,7 @@ class DataStorage(object):
         if 'rain_at_position' in old_data:
             data['rain_at_position'] = old_data['rain_at_position']
 
-        if 'next_hit' in old_data:
+        if 'next_hit' in old_data and bool(old_data['next_hit']):
             data['next_hit'] = Cell.from_dict(old_data['next_hit'])
 
         return data

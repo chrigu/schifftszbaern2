@@ -4,7 +4,7 @@ from datetime import datetime
 
 from numpy import array as np_array
 from scipy import ndimage
-#import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 from numpy import linalg
 
@@ -59,9 +59,10 @@ class RadarData(object):
     """
     def __init__(self, radar_image, timestamp):
 
+        self.radar_image = radar_image
         self.timestamp = timestamp
-        if radar_image:
-            self.radar_image = radar_image
+
+        if self.radar_image:
             image_data = self._make_raster(radar_image.image_data)
             self.cells, self.label_image = self._analyze(image_data)
 
@@ -78,9 +79,14 @@ class RadarData(object):
         for cell in self.cells:
             dict_cells.append(cell.to_dict())
 
+        label_image = self.label_image
+
+        if not isinstance(label_image, list):
+            label_image = self.label_image.tolist()
+
         return_dict = {
             'cells': dict_cells,
-            'label_image': self.label_image.tolist(),
+            'label_image': label_image,
             'timestamp': datetime.strftime(self.timestamp, DATE_FORMAT)
         }
 
@@ -94,8 +100,9 @@ class RadarData(object):
         cells = []
 
         for cell_dict in data_dict['cells']:
-            cell = Cell.from_dict(cell_dict)
-            cells.append(cell)
+            if bool(cell_dict):
+                cell = Cell.from_dict(cell_dict)
+                cells.append(cell)
 
         radar_data.cells = cells
         radar_data.label_image = data_dict['label_image']

@@ -12,8 +12,11 @@ class RadarImage(object):
 
         url, image_name = self._get_image_name(timestamp, forecast, url)
 
-        response = get(url)
-        image = Image.open(BytesIO(response.content))
+        if url.startswith('http'):
+            response = get(url)
+            image = Image.open(BytesIO(response.content))
+        else:
+            image = Image.open(image_name)
 
         if image.palette:
             image = image.convert(mode='RGBA')

@@ -3,16 +3,6 @@ import math
 from datetime import timedelta
 from functools import partial, reduce
 
-# def _latest_c(reverse_radar_data):
-#     oldest_cells = []
-#     n_1_values = []
-#
-#     # add all cells from the oldest radar data object to an array
-#     for cell in reverse_radar_data[0].cells:
-#         oldest_cells.append([cell])
-#         n_1_values.append(cell)
-#
-#     return oldest_cells, n_1_values
 from radar.cell import Cell
 
 
@@ -107,8 +97,8 @@ def _make_cells_history(radar_data):
 
 def _get_delta_for_cell_history(cell_history):
     number_items = len(cell_history)
-    delta_x = (cell_history[-1].center_of_mass[0] - cell_history[0].center_of_mass[0]) / number_items
-    delta_y = (cell_history[-1].center_of_mass[1] - cell_history[0].center_of_mass[1]) / number_items
+    delta_x = (cell_history[0].center_of_mass[0] - cell_history[-1].center_of_mass[0]) / (number_items - 1)
+    delta_y = (cell_history[0].center_of_mass[1] - cell_history[-1].center_of_mass[1]) / (number_items - 1)
 
     return delta_x, delta_y
 
@@ -125,7 +115,6 @@ def _calc_next_positions(cell, delta_x, delta_y, steps):
                              'forecast_{}'.format(cell.label), cell.timestamp + timedelta(0, delta_t))
 
         forecasts.append(forecast_cell)
-        # print(forecast_cell.center_of_mass)
 
     return forecasts
 
@@ -137,8 +126,9 @@ def _extrapolate_cells(cells_history):
 
     for cell_history in cells_history:
         delta_x, delta_y = _get_delta_for_cell_history(cell_history)
-        forecasted_cells = _calc_next_positions(cell_history[-1], delta_x, delta_y, 5)
-        forcast.append(forecasted_cells)
+        if delta_x != 0 or delta_y != 0:
+            forecasted_cells = _calc_next_positions(cell_history[0], delta_x, delta_y, 5)
+            forcast.append(forecasted_cells)
 
     return forcast
 
@@ -162,6 +152,7 @@ def _find_cell_hits(forecasted_cells, location):
 
         for cell in cells:
             dist = math.hypot(location[0] - cell.center_of_mass[0], location[1] - cell.center_of_mass[1])
+            print("{} {} {} {}".format(cell.center_of_mass, dist, r, cell.size))
             if dist < r:
                 hits.append(cell)
                 break
@@ -189,7 +180,7 @@ def make_forecast(radar_data, location):
     next_hit = _find_next_hit(hits)
 
     if next_hit:
-        hit_history = cells_history[_find_cell_hits(forecasted_cells, next_hit)]
+        hit_history = cells_history[_find_forecasts_index_for_next_hit(forecasted_cells, next_hit)]
     else:
         hit_history = []
 
