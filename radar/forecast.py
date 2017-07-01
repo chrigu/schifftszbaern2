@@ -152,7 +152,7 @@ def _find_cell_hits(forecasted_cells, location):
 
         for cell in cells:
             dist = math.hypot(location[0] - cell.center_of_mass[0], location[1] - cell.center_of_mass[1])
-            print("{} {} {} {}".format(cell.center_of_mass, dist, r, cell.size))
+            # print("{} {} {} {}".format(cell.center_of_mass, dist, r, cell.size))
             if dist < r:
                 hits.append(cell)
                 break
@@ -160,15 +160,24 @@ def _find_cell_hits(forecasted_cells, location):
     return hits
 
 
+def find_cell_index_in_history(cells, cell_to_find):
+
+    # todo list comprehnsion, mayhaps?
+
+    for cell in cells:
+        if cell.id == cell_to_find.id:
+            return True
+
+    return False
+
+
 def _find_forecasts_index_for_next_hit(forecasted_cells, next_hit):
 
     index = 0
 
     for cells in forecasted_cells:
-        for cell in cells:
-            if cell.id == next_hit.id:
-                return index
-
+        if find_cell_index_in_history(cells, next_hit):
+            return index
         index += 1
 
 
