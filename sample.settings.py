@@ -28,3 +28,6 @@ ACCESS_TOKEN = 'access-token'
 ACCESS_TOKEN_SECRET ='token-secret'
 
 TWEET_SCHIFFTS = False
+
+# GraphQL
+GRAPH_COOL_ENDPOINT = 'https://api.graph.cool/simple/v1/__PROJECT_ID__'

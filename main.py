@@ -1,5 +1,7 @@
 import settings
 from datetime import datetime
+
+from graphql.graphql import save_cells
 from radar import get_rain
 from radar.forecast import find_cell_index_in_history
 from radar.utils import DATE_FORMAT
@@ -20,6 +22,7 @@ def handle_new_hit(forecast, old_hit):
     if not find_cell_index_in_history(forecast['hit_history'], old_hit):
         tweet_prediction(forecast['next_hit'])
 
+
 def schiffts():
 
     datastorage = DataStorage("schiffts.json")
@@ -33,12 +36,12 @@ def schiffts():
     # check if hit was already reported
     # check if old and new rain
 
-
     if bool(current_rain_at_location) != bool(old_data['rain_at_position']):
         do_twitter(current_rain_at_location)
 
-
     save_data(datastorage, current_rain_at_location, radar_data, forecast['next_hit'])
+
+    save_cells(radar_data[0].cells, False)
 
 
 if __name__ == '__main__':

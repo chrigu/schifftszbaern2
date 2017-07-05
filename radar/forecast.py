@@ -97,6 +97,10 @@ def _make_cells_history(radar_data):
 
 def _get_delta_for_cell_history(cell_history):
     number_items = len(cell_history)
+
+    if number_items - 1 == 0:
+        return 0, 0
+
     delta_x = (cell_history[0].center_of_mass[0] - cell_history[-1].center_of_mass[0]) / (number_items - 1)
     delta_y = (cell_history[0].center_of_mass[1] - cell_history[-1].center_of_mass[1]) / (number_items - 1)
 
