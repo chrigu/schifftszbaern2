@@ -5,6 +5,11 @@ import settings
 import json
 from requests import post
 
+HEADERS = {
+            'Content-Type': "application/json",
+            "Accept": "application/json"
+        }
+
 
 def cells_to_graphql(cells, forecast):
 
@@ -38,13 +43,12 @@ mutation {{
 def save_cells(cells, forecast):
 
     query = cells_to_graphql(cells, forecast)
+    _save_graphql(query)
+
+
+def _save_graphql(query):
 
     if query:
-
-        headers = {
-            'Content-Type': "application/json",
-            "Accept": "application/json"
-        }
 
         data = {
             'query': query
@@ -52,31 +56,19 @@ def save_cells(cells, forecast):
 
 
         print(data)
-        #response = post(settings.GRAPH_COOL_ENDPOINT, headers=headers, data=json.dumps(data))
-        #print(response.text)
+        post(settings.GRAPH_COOL_ENDPOINT, headers=HEADERS, data=json.dumps(data))
 
-# data = """
-# mutation {
-#   createCell(
-#     cellId: "e13aeae2c0a549008864bfff43506f7f"
-#     size: 29
-#     intensity: 3
-#     positionX: 45
-#     positionY: 48
-#     forecast: false
-#     timestamp: "2016-11-22T13:57:31.123Z"
-#   ) {
-#     id
-#     cellId
-#   }
-# }
-# """
-#
-# data = {
-#     'query': data
-# }
-#
-# print(data)
-#
-# r = post(settings.GRAPH_COOL_ENDPOINT, headers=headers, data=json.dumps(data))
-# print(r.text)
+def save_current(intensity):
+    query = """
+    mutation {{
+      createRainLocation(
+        intensity: {}
+      ) {{
+        id
+        intensity
+        createdAt
+      }}
+    }}
+        """.format(intensity)
+
+    _save_graphql(query)

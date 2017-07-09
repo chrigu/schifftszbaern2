@@ -1,7 +1,7 @@
 import settings
 from datetime import datetime
 
-from graphql.graphql import save_cells
+from graphql.graphql import save_cells, save_current
 from radar import get_rain
 from radar.forecast import find_cell_index_in_history
 from radar.utils import DATE_FORMAT
@@ -23,6 +23,17 @@ def handle_new_hit(forecast, old_hit):
         tweet_prediction(forecast['next_hit'])
 
 
+def save_current_position(data):
+
+    intensity = -1
+
+    if data:
+        intensity = data['intensity']
+
+    save_current(intensity)
+
+
+
 def schiffts():
 
     datastorage = DataStorage("schiffts.json")
@@ -42,6 +53,8 @@ def schiffts():
     save_data(datastorage, current_rain_at_location, radar_data, forecast['next_hit'])
 
     save_cells(radar_data[0].cells, False)
+
+    save_current_position(current_rain_at_location)
 
 
 if __name__ == '__main__':
