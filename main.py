@@ -16,10 +16,10 @@ def save_data(datastorage, rain_at_location, radar_data, next_hit):
 
 def handle_new_hit(forecast, old_hit):
 
-    if not old_hit or not forecast['next_hit']:
+    if not forecast['next_hit']:
         return
 
-    if not find_cell_index_in_history(forecast['hit_history'], old_hit):
+    if not old_hit or not find_cell_index_in_history(forecast['hit_history'], old_hit):
         tweet_prediction(forecast['next_hit'])
 
 
@@ -49,6 +49,9 @@ def schiffts():
 
     if bool(current_rain_at_location) != bool(old_data['rain_at_position']):
         do_twitter(current_rain_at_location)
+
+    handle_new_hit(forecast, old_data['next_hit'])
+    # save data
 
     save_data(datastorage, current_rain_at_location, radar_data, forecast['next_hit'])
 

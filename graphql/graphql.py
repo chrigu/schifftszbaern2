@@ -13,37 +13,52 @@ HEADERS = {
 
 def cells_to_graphql(cells, forecast):
 
-    query = ""
+    if len(cells) == 0:
+        return ""
 
-    for cell in cells:
-        query += cell_to_graphql(cell, forecast)
+    query = """
+    mutation {
+    """
+
+    for index, cell in enumerate(cells):
+        query += cell_to_graphql(cell, forecast, index)
+
+    query += """
+        }
+    """
+
+    return query
 
 
-def cell_to_graphql(cell, forecast):
+def cell_to_graphql(cell, forecast, index):
+
+    forecast_string = "false"
+
+    if forecast:
+        forecast_string = "true"
 
     return """
-mutation {{
-  createCell(
-    cellId: "{}"
-    size: {}
-    intensity: {}
-    positionX: {}
-    positionY: {}
-    forecast: {}
-    timestamp: "{}"
-  ) {{
-    id
-    cellId
-  }}
-}}
-    """.format(cell.id, cell.size, cell.intensity, cell.center_of_mass[0], cell.center_of_mass[1], forecast,
-               datetime.strftime(cell.timestamp, "%Y-%m-%dT%H:%M:00.000Z"))
+    cell{}: createCell(
+        cellId: "{}"
+        size: {}
+        intensity: {}
+        positionX: {}
+        positionY: {}
+        forecast: {}
+        timestamp: "{}"
+      ) {{
+        id
+        cellId
+      }}
+    """.format(index, cell.id, int(cell.size), cell.intensity['intensity'], cell.center_of_mass[0], cell.center_of_mass[1],
+               forecast_string, datetime.strftime(cell.timestamp, "%Y-%m-%dT%H:%M:00.000Z"))
 
 
 def save_cells(cells, forecast):
 
     query = cells_to_graphql(cells, forecast)
-    _save_graphql(query)
+    if query != "":
+        _save_graphql(query)
 
 
 def _save_graphql(query):
@@ -54,9 +69,8 @@ def _save_graphql(query):
             'query': query
         }
 
+        response = post(settings.GRAPH_COOL_ENDPOINT, headers=HEADERS, data=json.dumps(data))
 
-        print(data)
-        post(settings.GRAPH_COOL_ENDPOINT, headers=HEADERS, data=json.dumps(data))
 
 def save_current(intensity):
     query = """
