@@ -16,23 +16,22 @@ def do_twitter(rain):
 
     tried = []
     for i in range(0, 5):
-      try:
-          print("twittercon: %s"%rain)
-          if rain:
+        try:
+            if rain:
               message = random.choice(settings.RAIN_MESSAGES)
-          else:
+            else:
               message = random.choice(settings.NO_RAIN_MESSAGES)
 
-          if message in tried:
-            continue
+            if message in tried:
+                continue
 
-          api.PostUpdate(message)
-          break
+            api.PostUpdate(message)
+            break
 
-      except Exception as e:
-          print(e)
-          tried.append(message)
-          pass
+        except Exception as e:
+            print(e)
+            tried.append(message)
+            pass
 
 
 # todo: move twitter api code elsewhere

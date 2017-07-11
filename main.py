@@ -33,7 +33,6 @@ def save_current_position(data):
     save_current(intensity)
 
 
-
 def schiffts():
 
     datastorage = DataStorage("schiffts.json")
@@ -44,21 +43,19 @@ def schiffts():
     current_rain_at_location, forecast, radar_data = get_rain((settings.X_LOCATION, settings.Y_LOCATION),
                                                               old_history=old_data['radar_history'])
 
-    # check if hit was already reported
-    # check if old and new rain
-
     if bool(current_rain_at_location) != bool(old_data['rain_at_position']):
         do_twitter(current_rain_at_location)
 
     handle_new_hit(forecast, old_data['next_hit'])
-    # save data
 
     save_data(datastorage, current_rain_at_location, radar_data, forecast['next_hit'])
-
     save_cells(radar_data[0].cells, False)
-
     save_current_position(current_rain_at_location)
 
+    # todo:
+    # get temperature
+    # get weather
+    # check for snow
 
 if __name__ == '__main__':
     schiffts()
