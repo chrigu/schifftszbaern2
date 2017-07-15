@@ -7,6 +7,7 @@ from radar.forecast import find_cell_index_in_history
 from radar.utils import DATE_FORMAT
 from datastorage import DataStorage
 from schiffts_twitter.schiffts_twitter import do_twitter, tweet_prediction
+from weather import get_weather
 
 
 def save_data(datastorage, rain_at_location, radar_data, next_hit):
@@ -23,14 +24,32 @@ def handle_new_hit(forecast, old_hit):
         tweet_prediction(forecast['next_hit'])
 
 
-def save_current_position(data):
+def save_current_position(data, weather):
 
-    intensity = -1
+    current_data = {
+        'intensity': -1
+    }
 
     if data:
-        intensity = data['intensity']
+        current_data['intensity'] = data['intensity']
 
-    save_current(intensity)
+    if weather:
+        current_data = {**current_data, **weather}
+
+    save_current(current_data)
+
+
+def handle_weather(city):
+    weather_at_location = get_weather(city)
+    weather_data = None
+
+    if weather_at_location:
+        weather_data = {
+            'temperature': weather_at_location['current_temp'],
+            'weatherCode': weather_at_location['weather_symbol_id']
+        }
+
+    return weather_data
 
 
 def schiffts():
@@ -48,9 +67,11 @@ def schiffts():
 
     handle_new_hit(forecast, old_data['next_hit'])
 
+    weather_data = handle_weather(settings.SMN_CITY_NAME)
+
     save_data(datastorage, current_rain_at_location, radar_data, forecast['next_hit'])
     save_cells(radar_data[0].cells, False)
-    save_current_position(current_rain_at_location)
+    save_current_position(current_rain_at_location, weather_data)
 
     # todo:
     # get temperature

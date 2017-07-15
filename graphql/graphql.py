@@ -72,17 +72,36 @@ def _save_graphql(query):
         response = post(settings.GRAPH_COOL_ENDPOINT, headers=HEADERS, data=json.dumps(data))
 
 
-def save_current(intensity):
-    query = """
-    mutation {{
-      createRainLocation(
-        intensity: {}
-      ) {{
-        id
-        intensity
-        createdAt
-      }}
-    }}
-        """.format(intensity)
+def save_current(weather_data):
 
+    if 'weatherCode' in weather_data:
+
+        query = """
+        mutation {{
+          createWeatherLocation(
+            intensity: {}
+            weatherCode: {}
+            temperature: {}
+          ) {{
+            id
+            intensity
+            weatherCode
+            temperature
+            createdAt
+          }}
+        }}
+            """.format(weather_data['intensity'], weather_data['weatherCode'], weather_data['temperature'])
+
+    else:
+        query = """
+        mutation {{
+          createWeatherLocation(
+            intensity: {}
+          ) {{
+            id
+            intensity
+            createdAt
+          }}
+        }}
+            """.format(weather_data['intensity'])
     _save_graphql(query)

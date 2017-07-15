@@ -29,5 +29,8 @@ ACCESS_TOKEN_SECRET ='token-secret'
 
 TWEET_SCHIFFTS = False
 
+# Code for smn measurement location
+SMN_CITY_NAME = "Bern"
+
 # GraphQL
 GRAPH_COOL_ENDPOINT = 'https://api.graph.cool/simple/v1/__PROJECT_ID__'
