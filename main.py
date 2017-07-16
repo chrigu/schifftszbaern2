@@ -34,7 +34,11 @@ def save_current_position(data, weather):
         current_data['intensity'] = data['intensity']
 
     if weather:
-        current_data = {**current_data, **weather}
+        # python min. 3.5
+        # current_data = {**current_data, **weather}
+
+        current_data['weatherCode'] = weather['weatherCode']
+        current_data['temperature'] = weather['temperature']
 
     save_current(current_data)
 
