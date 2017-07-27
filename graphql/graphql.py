@@ -5,11 +5,6 @@ import settings
 import json
 from requests import post
 
-HEADERS = {
-            'Content-Type': "application/json",
-            "Accept": "application/json"
-        }
-
 
 def cells_to_graphql(cells, forecast):
 
@@ -69,7 +64,14 @@ def _save_graphql(query):
             'query': query
         }
 
-        response = post(settings.GRAPH_COOL_ENDPOINT, headers=HEADERS, data=json.dumps(data))
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer {}".format(settings.GRAPH_COOL_TOKEN)
+        }
+
+        response = post(settings.GRAPH_COOL_ENDPOINT, headers=headers, data=json.dumps(data))
+        print(response)
 
 
 def save_current(weather_data):
