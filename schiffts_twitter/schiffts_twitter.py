@@ -42,8 +42,11 @@ def tweet_prediction(next_hit):
                                access_token_key=settings.ACCESS_TOKEN,
                                access_token_secret=settings.ACCESS_TOKEN_SECRET)
 
-    send_tweet("delta:{}, s:{}".format(datetime.strftime(next_hit.timestamp, "%H%M"), next_hit.size),
+    try:
+        send_tweet("delta:{}, s:{}".format(datetime.strftime(next_hit.timestamp, "%H%M"), next_hit.size),
                api=api)
+    except:
+        pass
 
     return True
 
