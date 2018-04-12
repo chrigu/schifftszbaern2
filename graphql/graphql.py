@@ -4,6 +4,7 @@ from datetime import datetime
 import settings
 import json
 from requests import post
+from datetime import datetime, timedelta
 
 
 def cells_to_graphql(cells, forecast):
@@ -106,4 +107,26 @@ def save_current(weather_data):
           }}
         }}
             """.format(weather_data['intensity'])
+    _save_graphql(query)
+
+
+def save_hit(hit):
+
+    delta_t = hit.timestamp - datetime.now()
+
+    query = """
+    mutation {{
+      createHit(
+        intensity: {}
+        size: {}
+        delta: {}
+      ) {{
+        id
+        intensity
+        size
+        delta
+        createdAt
+      }}
+    }}
+        """.format(hit.intensity, hit.size, delta_t.seconds)
     _save_graphql(query)
