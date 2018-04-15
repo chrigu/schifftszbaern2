@@ -15,19 +15,26 @@ def _is_new_hit(old_hit, forecast):
 
 def _last_hit_not_relevant(last_hit):
     timedelta_to_now = datetime.now() - parse(last_hit['createdAt'])
-    return len(last_hit) == 0 or timedelta_to_now.minutes < TIME_THRESHOLD
+    return timedelta_to_now.seconds > TIME_THRESHOLD * 60
 
 
-def handle_new_hit(forecast, old_hit):
+def _has_no_last_hit(last_hit):
+    return len(last_hit) == 0
+
+
+def handle_new_hit(forecast):
 
     if not forecast['next_hit']:
         return
 
     save_hit(forecast['next_hit'])
 
-    last_hit = get_last_hit()
+    last_hits = get_last_hit()
 
-    if _last_hit_not_relevant(last_hit):
+    if _has_no_last_hit(last_hits):
+        return
+
+    if _last_hit_not_relevant(last_hits[0]):
         return
 
     send_push()

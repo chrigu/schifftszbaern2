@@ -10,6 +10,8 @@ from radar.forecast import _find_closest_point, _find_closest_cells, _make_cells
     _get_delta_for_cell_history, _extrapolate_cells, _calc_next_positions, _find_next_hit, _find_cell_hits, \
     _find_forecasts_index_for_next_hit
 
+from radar.hit import _last_hit_not_relevant, _has_no_last_hit, TIME_THRESHOLD
+
 
 class RadarDataMock(object):
     def __init__(self, cells, timestamp):
@@ -323,6 +325,26 @@ class ForecastTests(unittest.TestCase):
     #     cell_history2 = [cell4, cell5, cell6]
     #
     #     _extrapolate_cells([cell_history1, cell_history2])
+
+
+class HitTests(unittest.TestCase):
+
+    def test_last_hit_relevant(self):
+        now_minus_threshold = datetime.now() - timedelta(0, 0, 0, 0, TIME_THRESHOLD - 1)
+        last_hit = {"createdAt": now_minus_threshold.isoformat()}
+        not_relevant = _last_hit_not_relevant(last_hit)
+        self.assertFalse(not_relevant)
+
+    def test_last_hit__not_relevant(self):
+        now_minus_threshold = datetime.now() - timedelta(0, 0, 0, 0, TIME_THRESHOLD + 1)
+        last_hit = {"createdAt": now_minus_threshold.isoformat()}
+        not_relevant = _last_hit_not_relevant(last_hit)
+        self.assertTrue(not_relevant)
+
+    def test_has_last_hit(self):
+        last_hit = {"intensity": 12}
+        has_no_last_hit = _has_no_last_hit([last_hit])
+        self.assertFalse(has_no_last_hit)
 
 
 if __name__ == '__main__':
