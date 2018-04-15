@@ -35,3 +35,7 @@ SMN_CITY_NAME = "Bern"
 # GraphQL
 GRAPH_COOL_ENDPOINT = 'https://api.graph.cool/simple/v1/__PROJECT_ID__'
 GRAPH_COOL_TOKEN = 'TOKEN'
+
+# OneSignal
+ONESIGNAL_APP_ID = 'app_id'
+ONESIGNAL_APP_REST_KEY = 'app_key'

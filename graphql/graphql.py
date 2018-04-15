@@ -130,3 +130,29 @@ def save_hit(hit):
     }}
         """.format(hit.intensity, hit.size, delta_t.seconds)
     _save_graphql(query)
+
+
+def get_last_hit():
+    query ="""
+        query {
+        allHits(last: 1) {
+            createdAt
+            intensity
+            size
+            delta
+        }
+    }
+    """
+
+    data = {
+        'query': query
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer {}".format(settings.GRAPH_COOL_TOKEN)
+    }
+
+    response = post(settings.GRAPH_COOL_ENDPOINT, headers=headers, data=json.dumps(data))
+    return response.json()['data']['allHits']

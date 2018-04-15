@@ -1,29 +1,18 @@
-import settings
 from datetime import datetime
 
-from graphql.graphql import save_cells, save_current, save_hit
-from radar import collect_rain_data
-from radar.forecast import find_cell_index_in_history
-from radar.utils import DATE_FORMAT
+import settings
 from datastorage import DataStorage
-from schiffts_twitter.schiffts_twitter import do_twitter, tweet_prediction
+from graphql.graphql import save_cells, save_current
+from radar import collect_rain_data
+from radar.utils import DATE_FORMAT
+from schiffts_twitter.schiffts_twitter import do_twitter
 from weather import get_weather
+from radar.hit import handle_new_hit
 
 
 def save_data(datastorage, rain_at_location, radar_data, next_hit):
     current_timestamp = datetime.strftime(radar_data[0].timestamp, DATE_FORMAT)
     datastorage.save_data(current_timestamp, radar_data, next_hit, rain_at_location)
-
-
-def handle_new_hit(forecast, old_hit):
-
-    if not forecast['next_hit']:
-        return
-
-    save_hit(forecast['next_hit'])
-
-    if not old_hit or not find_cell_index_in_history(forecast['hit_history'], old_hit):
-        tweet_prediction(forecast['next_hit'])
 
 
 def save_current_position(data, weather):
