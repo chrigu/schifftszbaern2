@@ -60,7 +60,7 @@ def schiffts():
     if bool(current_rain_at_location) != bool(old_data['rain_at_position']):
         do_twitter(current_rain_at_location)
 
-    handle_new_hit(forecast, old_data['next_hit'])
+    handle_new_hit(forecast)
 
     weather_data = handle_weather(settings.SMN_CITY_NAME)
 
