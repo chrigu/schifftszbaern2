@@ -1,4 +1,6 @@
+# -*- coding: utf-8 -*-
 from datetime import datetime
+import logging
 
 import settings
 from datastorage import DataStorage
@@ -8,6 +10,46 @@ from radar.utils import DATE_FORMAT
 from schiffts_twitter.schiffts_twitter import do_twitter
 from weather import get_weather
 from radar.hit import handle_new_hit
+
+
+def schiffts():
+
+    setup_logging()
+
+    datastorage = DataStorage("schiffts.json")
+
+    # load old data
+    old_data = datastorage.load_data()
+
+    current_rain_at_location, forecast, radar_data = collect_rain_data((settings.X_LOCATION, settings.Y_LOCATION),
+                                                                       saved_history=old_data['radar_history'])
+
+    if bool(current_rain_at_location) != bool(old_data['rain_at_position']):
+        do_twitter(current_rain_at_location)
+
+    handle_new_hit(forecast)
+
+    weather_data = handle_weather(settings.SMN_CITY_NAME)
+
+    save_data(datastorage, current_rain_at_location, radar_data, forecast['next_hit'])
+    save_cells(radar_data[0].cells, False)
+    save_current_position(current_rain_at_location, weather_data)
+
+    # todo:
+    # get temperature
+    # get weather
+    # check for snow
+
+
+def setup_logging():
+    logger = logging.getLogger('schiffts')
+    logger.setLevel(logging.DEBUG)
+
+    fh = logging.FileHandler('schiffts.log')
+    fh.setLevel(logging.DEBUG)
+    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
 
 
 def save_data(datastorage, rain_at_location, radar_data, next_hit):
@@ -46,32 +88,6 @@ def handle_weather(city):
 
     return weather_data
 
-
-def schiffts():
-
-    datastorage = DataStorage("schiffts.json")
-
-    # load old data
-    old_data = datastorage.load_data()
-
-    current_rain_at_location, forecast, radar_data = collect_rain_data((settings.X_LOCATION, settings.Y_LOCATION),
-                                                                       saved_history=old_data['radar_history'])
-
-    if bool(current_rain_at_location) != bool(old_data['rain_at_position']):
-        do_twitter(current_rain_at_location)
-
-    handle_new_hit(forecast)
-
-    weather_data = handle_weather(settings.SMN_CITY_NAME)
-
-    save_data(datastorage, current_rain_at_location, radar_data, forecast['next_hit'])
-    save_cells(radar_data[0].cells, False)
-    save_current_position(current_rain_at_location, weather_data)
-
-    # todo:
-    # get temperature
-    # get weather
-    # check for snow
 
 
 if __name__ == '__main__':
