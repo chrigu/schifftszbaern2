@@ -34,8 +34,8 @@ def handle_new_hit(forecast):
 
     module_logger.info("next hitdelta:{}, s:{}".format(datetime.strftime(forecast['next_hit'].timestamp,
                                                                          "%H%M"), forecast['next_hit'].size))
-    save_hit(forecast['next_hit'])
     last_hits = get_last_hit()
+    save_hit(forecast['next_hit'])
 
     if not _has_no_last_hit(last_hits):
         module_logger.info("Has no last hits")

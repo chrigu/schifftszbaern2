@@ -72,7 +72,7 @@ def _save_graphql(query):
         }
 
         response = post(settings.GRAPH_COOL_ENDPOINT, headers=headers, data=json.dumps(data))
-        print(response)
+        print(response.json())
 
 
 def save_current(weather_data):
@@ -113,7 +113,6 @@ def save_current(weather_data):
 def save_hit(hit):
 
     delta_t = hit.timestamp - datetime.now()
-
     query = """
     mutation {{
       createHit(
@@ -128,12 +127,12 @@ def save_hit(hit):
         createdAt
       }}
     }}
-        """.format(hit.intensity, hit.size, delta_t.seconds)
+        """.format(hit.intensity["intensity"], int(hit.size), delta_t.seconds)
     _save_graphql(query)
 
 
 def get_last_hit():
-    query ="""
+    query = """
         query {
         allHits(last: 1) {
             createdAt
