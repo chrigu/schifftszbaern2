@@ -43,7 +43,7 @@ def handle_new_hit(forecast):
         module_logger.info("Has no last hits")
         return
 
-    if _last_hit_not_relevant(last_hits[0]):
+    if len(last_hits) == 0 or _last_hit_not_relevant(last_hits[0]):
         module_logger.info("Has no relevant hit")
         return
 
