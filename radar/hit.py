@@ -4,7 +4,8 @@ from graphql.graphql import save_hit, get_last_hit
 from radar.forecast import find_cell_index_in_history
 from schiffts_twitter.schiffts_twitter import tweet_prediction
 from dateutil.parser import parse
-from datetime import  datetime
+from pytz import timezone
+from datetime import datetime
 from push import send_push
 
 TIME_THRESHOLD = 45
@@ -18,7 +19,8 @@ def _is_new_hit(old_hit, forecast):
 
 
 def _last_hit_not_relevant(last_hit):
-    timedelta_to_now = datetime.now() - parse(last_hit['createdAt'])
+    last_hit_created_at = parse(last_hit['createdAt'])
+    timedelta_to_now = timezone('Europe/Zurich').localize(datetime.now()) - last_hit_created_at
     return timedelta_to_now.seconds > TIME_THRESHOLD * 60
 
 
@@ -37,7 +39,7 @@ def handle_new_hit(forecast):
     last_hits = get_last_hit()
     save_hit(forecast['next_hit'])
 
-    if not _has_no_last_hit(last_hits):
+    if _has_no_last_hit(last_hits):
         module_logger.info("Has no last hits")
         return
 
