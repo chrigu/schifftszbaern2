@@ -39,3 +39,9 @@ GRAPH_COOL_TOKEN = 'TOKEN'
 # OneSignal
 ONESIGNAL_APP_ID = 'app_id'
 ONESIGNAL_APP_REST_KEY = 'app_key'
+
+# S3
+SAVE_TO_S3 = True
+S3_BUCKET = 'mybucket.ch'
+S3_ACCESS_ID = 'MYKEY'
+S3_ACCESS_SECRET = 'MYSECRET'

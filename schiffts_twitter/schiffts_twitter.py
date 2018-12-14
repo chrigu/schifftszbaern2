@@ -43,8 +43,9 @@ def tweet_prediction(next_hit):
                       access_token_secret=settings.ACCESS_TOKEN_SECRET)
 
     try:
-        send_tweet("delta:{}, s:{}".format(datetime.strftime(next_hit.timestamp, "%H%M"), next_hit.size),
-                   api=api)
+        # send_tweet("delta:{}, s:{}".format(datetime.strftime(next_hit.timestamp, "%H%M"), next_hit.size),
+        #            api=api)
+        send_tweet("Achtung es isch öppis ufem Wäg!", api=api)
     except:
         pass
 

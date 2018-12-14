@@ -21,7 +21,7 @@ def _is_new_hit(old_hit, forecast):
 def _last_hit_not_relevant(last_hit):
     last_hit_created_at = parse(last_hit['createdAt'])
     timedelta_to_now = timezone('Europe/Zurich').localize(datetime.now()) - last_hit_created_at
-    return timedelta_to_now.seconds > TIME_THRESHOLD * 60
+    return timedelta_to_now.seconds < TIME_THRESHOLD * 60
 
 
 def _has_no_last_hit(last_hit):
