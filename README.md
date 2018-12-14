@@ -1,3 +1,3 @@
 Tests
 
-python -m radar.tests 
+python -m tests

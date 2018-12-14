@@ -8,9 +8,9 @@ import settings
 
 def do_twitter(rain):
     api = twitter.Api(consumer_key=settings.CONSUMER_KEY,
-                               consumer_secret=settings.CONSUMER_SECRET,
-                               access_token_key=settings.ACCESS_TOKEN,
-                               access_token_secret=settings.ACCESS_TOKEN_SECRET)
+                      consumer_secret=settings.CONSUMER_SECRET,
+                      access_token_key=settings.ACCESS_TOKEN,
+                      access_token_secret=settings.ACCESS_TOKEN_SECRET)
 
     print(api.VerifyCredentials())
 
@@ -18,9 +18,9 @@ def do_twitter(rain):
     for i in range(0, 5):
         try:
             if rain:
-              message = random.choice(settings.RAIN_MESSAGES)
+                message = random.choice(settings.RAIN_MESSAGES)
             else:
-              message = random.choice(settings.NO_RAIN_MESSAGES)
+                message = random.choice(settings.NO_RAIN_MESSAGES)
 
             if message in tried:
                 continue
@@ -38,12 +38,16 @@ def do_twitter(rain):
 
 def tweet_prediction(next_hit):
     api = twitter.Api(consumer_key=settings.CONSUMER_KEY,
-                               consumer_secret=settings.CONSUMER_SECRET,
-                               access_token_key=settings.ACCESS_TOKEN,
-                               access_token_secret=settings.ACCESS_TOKEN_SECRET)
+                      consumer_secret=settings.CONSUMER_SECRET,
+                      access_token_key=settings.ACCESS_TOKEN,
+                      access_token_secret=settings.ACCESS_TOKEN_SECRET)
 
-    send_tweet("delta:{}, s:{}".format(datetime.strftime(next_hit.timestamp, "%H%M"), next_hit.size),
-               api=api)
+    try:
+        # send_tweet("delta:{}, s:{}".format(datetime.strftime(next_hit.timestamp, "%H%M"), next_hit.size),
+        #            api=api)
+        send_tweet("Achtung es isch öppis ufem Wäg!", api=api)
+    except:
+        pass
 
     return True
 

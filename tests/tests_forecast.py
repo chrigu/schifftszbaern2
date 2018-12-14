@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import unittest
 import math
+import unittest
 from datetime import datetime, timedelta
 
-from radar import RadarData, _get_old_radar_data
 from radar.cell import Cell
 from radar.forecast import _find_closest_point, _find_closest_cells, _make_cells_history, _make_cell_history, \
-    _get_delta_for_cell_history, _extrapolate_cells, _calc_next_positions, _find_next_hit, _find_cell_hits, \
+    _get_delta_for_cell_history, _calc_next_positions, _find_next_hit, _find_cell_hits, \
     _find_forecasts_index_for_next_hit
 
 
@@ -15,27 +14,6 @@ class RadarDataMock(object):
     def __init__(self, cells, timestamp):
         self.cells = cells
         self.timestamp = timestamp
-
-
-class RadarTests(unittest.TestCase):
-
-    def test_get_saved_radar_data(self):
-
-        timestamps = [datetime.now() + timedelta(0, x * -10 * 60) for x in range(3)]
-        radar_history = [RadarData(None, timestamp) for timestamp in timestamps]
-
-        radar_data = _get_old_radar_data(timestamps[1], radar_history)
-
-        self.assertEqual(radar_data, radar_history[1])
-
-    def test_get_saved_radar_data_without_result(self):
-
-        timestamps = [datetime.now() + timedelta(0, x * -10 * 60) for x in range(3)]
-        radar_history = [RadarData(None, timestamp) for timestamp in timestamps]
-
-        radar_data = _get_old_radar_data(datetime.now() + timedelta(0, 5 * -10 * 60), radar_history)
-
-        self.assertEqual(radar_data, None)
 
 
 class ForecastTests(unittest.TestCase):
@@ -306,24 +284,3 @@ class ForecastTests(unittest.TestCase):
         index = _find_forecasts_index_for_next_hit(forecasted_cells, hit1)
 
         self.assertEqual(index, 1)
-
-    # def test_extrapolate_cell(self):
-    #     first_x, first_y, last_x, last_y = 0, 0, 10, 10
-    #
-    #     t = datetime.now()
-    #     cell1 = Cell(23, 30, 23, (first_x, first_y), [255, 255, 255], "test1", t)
-    #     cell2 = Cell(23, 30, 23, (5, 10), [255, 255, 255], "test2", t)
-    #     cell3 = Cell(23, 30, 23, (last_x, last_y), [255, 255, 255], "test3", t)
-    #
-    #     cell4 = Cell(23, 30, 23, (20, 0), [255, 255, 255], "test4", t)
-    #     cell5 = Cell(23, 30, 23, (21, 30), [255, 255, 255], "test5", t)
-    #     cell6 = Cell(23, 30, 23, (30, 40), [255, 255, 255], "test6", t)
-    #
-    #     cell_history1 = [cell1, cell2, cell3]
-    #     cell_history2 = [cell4, cell5, cell6]
-    #
-    #     _extrapolate_cells([cell_history1, cell_history2])
-
-
-if __name__ == '__main__':
-    unittest.main()

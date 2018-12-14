@@ -4,11 +4,7 @@ from datetime import datetime
 import settings
 import json
 from requests import post
-
-HEADERS = {
-            'Content-Type': "application/json",
-            "Accept": "application/json"
-        }
+from datetime import datetime, timedelta
 
 
 def cells_to_graphql(cells, forecast):
@@ -69,20 +65,93 @@ def _save_graphql(query):
             'query': query
         }
 
-        response = post(settings.GRAPH_COOL_ENDPOINT, headers=HEADERS, data=json.dumps(data))
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": "Bearer {}".format(settings.GRAPH_COOL_TOKEN)
+        }
+
+        response = post(settings.GRAPH_COOL_ENDPOINT, headers=headers, data=json.dumps(data))
+        print(response.json())
 
 
-def save_current(intensity):
+def save_current(weather_data):
+
+    if 'weatherCode' in weather_data:
+
+        query = """
+        mutation {{
+          createWeatherLocation(
+            intensity: {}
+            weatherCode: {}
+            temperature: {}
+          ) {{
+            id
+            intensity
+            weatherCode
+            temperature
+            createdAt
+          }}
+        }}
+            """.format(weather_data['intensity'], weather_data['weatherCode'], weather_data['temperature'])
+
+    else:
+        query = """
+        mutation {{
+          createWeatherLocation(
+            intensity: {}
+          ) {{
+            id
+            intensity
+            createdAt
+          }}
+        }}
+            """.format(weather_data['intensity'])
+    _save_graphql(query)
+
+
+def save_hit(hit):
+
+    delta_t = hit.timestamp - datetime.now()
     query = """
     mutation {{
-      createRainLocation(
+      createHit(
         intensity: {}
+        size: {}
+        delta: {}
       ) {{
         id
         intensity
+        size
+        delta
         createdAt
       }}
     }}
-        """.format(intensity)
-
+        """.format(hit.intensity["intensity"], int(hit.size), delta_t.seconds)
     _save_graphql(query)
+
+
+def get_last_hit():
+    query = """
+        query {
+        allHits(last: 1) {
+            createdAt
+            intensity
+            size
+            delta
+        }
+    }
+    """
+
+    data = {
+        'query': query
+    }
+
+    headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": "Bearer {}".format(settings.GRAPH_COOL_TOKEN)
+    }
+
+    response = post(settings.GRAPH_COOL_ENDPOINT, headers=headers, data=json.dumps(data))
+    return response.json()['data']['allHits']

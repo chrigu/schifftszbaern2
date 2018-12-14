@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-
+import boto3
+from botocore.exceptions import ClientError
+import settings
 from PIL import Image
 from numpy import array
 from io import BytesIO
@@ -21,6 +23,9 @@ class RadarImage(object):
         if image.palette:
             image = image.convert(mode='RGBA')
 
+        if settings.SAVE_TO_S3:
+            self._save_to_s3(image, image_name)
+
         self._image_data = array(image.crop(crop_coords))
         self._image_name = image_name
         # import scipy
@@ -34,6 +39,24 @@ class RadarImage(object):
     def get_rgb_for_position(self, position):
         return self._image_data[position[0]][position[1]][:-1]
 
+    # todo move to own file/class
+    def _save_to_s3(self, image, image_name):
+        client = boto3.client(
+            's3',
+            aws_access_key_id=settings.S3_ACCESS_ID,
+            aws_secret_access_key=settings.S3_ACCESS_SECRET,
+        )
+
+        try:
+            client.head_object(Bucket=settings.S3_BUCKET, Key=image_name)
+        except ClientError as e:
+            if (e.response['Error']['Code']) != 404:
+                image_bytes = BytesIO()
+                image.save(image_bytes, format('PNG'))
+
+                client.put_object(Body=image_bytes.getvalue(), Bucket=settings.S3_BUCKET,
+                                  Key=image_name)
+
     @property
     def image_data(self):
         return self._image_data
@@ -41,6 +64,7 @@ class RadarImage(object):
     @staticmethod
     def _get_image_name(timestamp, forecast, url):
 
+        # use local files. Mainly for testing
         if url and url.startswith('file:'):
             image_name = url.replace('file:', '')
 
@@ -55,7 +79,5 @@ class RadarImage(object):
 
             if not forecast and not url:
                 url = "http://www.srfcdn.ch/meteo/nsradar/media/web/%s" % (image_name)
-
-            # use local files. Mainly for testing
 
         return url, image_name
