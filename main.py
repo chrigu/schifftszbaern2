@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from datetime import datetime
 import logging
 
@@ -87,7 +86,6 @@ def handle_weather(city):
         }
 
     return weather_data
-
 
 
 if __name__ == '__main__':

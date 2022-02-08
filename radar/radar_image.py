@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 import boto3
 from botocore.exceptions import ClientError
 import settings
@@ -31,10 +30,7 @@ class RadarImage(object):
         # import scipy
         # scipy.misc.imsave(image_name, self._image_data)
 
-        if self._image_data.shape[2] == 4:
-            self._has_alpha = True
-        else:
-            self._has_alpha = False
+        self._has_alpha = self._image_data.shape[2] == 4
 
     def get_rgb_for_position(self, position):
         return self._image_data[position[0]][position[1]][:-1]
@@ -78,6 +74,6 @@ class RadarImage(object):
                 image_name = "FCSTMERCATOR.%s.png" % (timestring)
 
             if not forecast and not url:
-                url = "http://www.srfcdn.ch/meteo/nsradar/media/web/%s" % (image_name)
+                url = "https://www.srf.ch/meteo/static/map/layer/radar/web/%s" % (image_name)
 
         return url, image_name

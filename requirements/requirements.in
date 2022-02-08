@@ -1,0 +1,5 @@
+pipenv
+boto3
+Image
+requests
+numpy
